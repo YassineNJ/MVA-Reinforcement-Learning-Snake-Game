@@ -52,7 +52,7 @@ class BasicBuffer:
             i = 0
             for experience in batch:
                 state, action, reward, next_state, done = experience
-                if reward ==10 and i < batch_size :
+                if reward >0 and i < batch_size :
                     i+=1
                     state_batch.append(state)
                     action_batch.append(action)
