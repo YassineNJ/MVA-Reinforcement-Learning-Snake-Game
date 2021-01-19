@@ -244,8 +244,8 @@ class ACAgent:
     def plot(self , path, reward = True , score = True):
         
         exp = np.loadtxt(path)
-        exp2 = np.loadtxt("Experiments/ACN_rewards.txt")
-        exp3 = np.loadtxt("Experiments/ACN_rewards_Use_conv_False_descreet.txt")
+#         exp2 = np.loadtxt("Experiments/ACN_rewards.txt")
+#         exp3 = np.loadtxt("Experiments/ACN_rewards_Use_conv_False_descreet.txt")
         if reward:
             plt.figure()
             plt.title('Mean reward over learning')
@@ -257,10 +257,10 @@ class ACAgent:
             plt.title('Mean score over learning')
             plt.plot(exp[:,0], exp[:,4],label = 'Using embedding loss')
             plt.fill_between(exp[:,0], exp[:,4]+exp[:,5] , np.clip(exp[:,4]-exp[:,5],0,None) , alpha = 0.2)
-            plt.plot(exp2[:,0], exp2[:,4], label = 'Without embedding loss')
-            plt.fill_between(exp2[:,0], exp2[:,4]+exp2[:,5] , np.clip(exp2[:,4]-exp2[:,5],0,None) , alpha = 0.2 )
-            plt.plot(exp3[:,0], exp3[:,4] , label = 'Using discreet representation')
-            plt.fill_between(exp3[:,0], exp3[:,4]+exp3[:,5] , np.clip(exp3[:,4]-exp3[:,5],0,None) , alpha = 0.2)
+#             plt.plot(exp2[:,0], exp2[:,4], label = 'Without embedding loss')
+#             plt.fill_between(exp2[:,0], exp2[:,4]+exp2[:,5] , np.clip(exp2[:,4]-exp2[:,5],0,None) , alpha = 0.2 )
+#             plt.plot(exp3[:,0], exp3[:,4] , label = 'Using discreet representation')
+#             plt.fill_between(exp3[:,0], exp3[:,4]+exp3[:,5] , np.clip(exp3[:,4]-exp3[:,5],0,None) , alpha = 0.2)
             plt.xlabel('training steps')
             plt.legend()
         plt.show()
