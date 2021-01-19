@@ -129,8 +129,10 @@ class SnakeGame:
             if self.gray_scale :
                 img = np.dot([0.2989, 0.5870, 0.1140],img)
                 img =  np.expand_dims(img, axis=0)
+                
             
                 #img = img.transpose(2,0,1)
+            
             return img
         else:
             head = self.head

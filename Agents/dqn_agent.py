@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 class DQNAgent:
 
     def __init__(self, env, use_conv=False,dueling=False, double = False,
-                 learning_rate=1e-4, gamma=0.99, buffer_size=100000):
+                 learning_rate=1e-4, gamma=0.99, buffer_size=100000,batch_size = 256):
         
         self.env = env
         self.use_conv = use_conv
@@ -21,13 +21,15 @@ class DQNAgent:
         self.policy = EpsilonGreedy(self)
         self.dueling = dueling
         self.double = double
-        self.name = 'DQN'+ dueling * '_DUELING' + double * '_DOUBLE'
-        self.model = DQN(env.observation_space, len(self.env.actions),use_conv = use_conv, dueling=dueling)  
+        self.batch_size = batch_size
+        self.learning_rate = learning_rate
+        self.name = "IMG_"*self.use_conv +'DQN'+ dueling * '_DUELING' + double * '_DOUBLE' + '_BS_'+ str(self.batch_size )+"_LR_"+str(self.learning_rate)
+        self.model = DQN(env.observation_space, len(self.env.actions),use_conv =self.use_conv, dueling=dueling)  
         self.tgt_model = deepcopy(self.model)
         self.update_tgt_every = 200
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(self.device)
-        self.learning_rate = learning_rate
+        
         self.gamma = gamma  
         self.optimizer = torch.optim.Adam(self.model.parameters() , lr =self.learning_rate )
         self.MSE_loss = nn.MSELoss()
@@ -87,9 +89,9 @@ class DQNAgent:
         loss = self.MSE_loss(curr_Q, expected_Q)
         return loss
 
-    def update(self, batch_size,WEIGHTED_SAMPLING):
+    def update(self, WEIGHTED_SAMPLING):
 
-        batch = self.replay_buffer.sample(batch_size,WEIGHTED_SAMPLING)
+        batch = self.replay_buffer.sample(self.batch_size,WEIGHTED_SAMPLING)
         loss = self.compute_loss(batch)
 
         self.optimizer.zero_grad()
@@ -126,7 +128,7 @@ class DQNAgent:
         return rewards , scores
 
 
-    def train(self,TRAIN_STEPS,EVAL_EVERY,BATCH_SIZE,WEIGHTED_SAMPLING):
+    def train(self,TRAIN_STEPS,EVAL_EVERY,WEIGHTED_SAMPLING):
 
         t0 = time.time()
         self.env.set_display(False)
@@ -146,12 +148,12 @@ class DQNAgent:
             transition = (state, action, reward, next_state, done)
             self.replay_buffer.push(*transition)
             
-            if len(self.replay_buffer) > WEIGHTED_SAMPLING*BATCH_SIZE:
+            if len(self.replay_buffer) > WEIGHTED_SAMPLING*self.batch_size:
                 train_step +=1
 
                 if train_step%1000 == 0:
                     print('training step : ',train_step)
-                self.update(BATCH_SIZE,WEIGHTED_SAMPLING)
+                self.update(WEIGHTED_SAMPLING)
 
                 
             if done  :
@@ -168,7 +170,7 @@ class DQNAgent:
             if train_step % EVAL_EVERY == 0:
 
                     # evaluate current policy
-                    rewards ,scores = self.eval(n_sim=50)
+                    rewards ,scores = self.eval(n_sim=100)
                     mean_rewards = np.mean(rewards)
                     std_rewards = np.std(rewards)
 
@@ -182,10 +184,8 @@ class DQNAgent:
                     episodes_rewards.append([train_step,t1-t0,mean_rewards,std_rewards ,mean_scores,std_scores])
 
                     torch.save(self.model.state_dict(), f'Experiments/model_{type(self.model).__name__}_{type(self.env).__name__}_{self.name}_.pth')
-                
-            
-            
-        np.savetxt(f"Experiments/rewards_{self.name}_use_conv_{self.use_conv}_.txt", np.array(episodes_rewards), fmt="%s")
+
+                    np.savetxt(f"Experiments/rewards_{self.name}.txt", np.array(episodes_rewards), fmt="%s")
 
         return episodes_rewards
 
@@ -202,7 +202,7 @@ class DQNAgent:
     
     def plot(self , reward = True , score = True):
         
-        exp = np.loadtxt(f"Experiments/rewards_{self.name}_use_conv_{self.use_conv}_.txt")
+        exp = np.loadtxt(f"Experiments/rewards_{self.name}.txt")
         if reward:
             plt.figure()
             plt.title('Mean reward over learning')
