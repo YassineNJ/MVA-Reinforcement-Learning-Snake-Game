@@ -11,6 +11,7 @@ class DQN(nn.Module):
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.dueling = dueling
+        self.relu = nn.ReLU()
         if use_conv :
             self.embedding = nn.Sequential(
                 nn.Conv2d(self.input_dim[0],16, kernel_size=8, stride=4),

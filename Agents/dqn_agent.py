@@ -8,8 +8,7 @@ from DeepNetworks.DQN import DQN
 from ExplorationPolicies.epsilon_greedy import EpsilonGreedy
 import time
 from copy import deepcopy
-import matplotlib as plt
-
+import matplotlib.pyplot as plt
 
 class DQNAgent:
 
@@ -149,6 +148,9 @@ class DQNAgent:
             
             if len(self.replay_buffer) > WEIGHTED_SAMPLING*BATCH_SIZE:
                 train_step +=1
+
+                if train_step%1000 == 0:
+                    print('training step : ',train_step)
                 self.update(BATCH_SIZE,WEIGHTED_SAMPLING)
 
                 
@@ -177,13 +179,13 @@ class DQNAgent:
                     print("episode =", ep, ", greedy reward = ", np.round(np.mean(rewards),2),",mean score = ",mean_scores , "time = ", t1-t0)
                     # if np.mean(rewards) >= REWARD_THRESHOLD:
                     #     break
-                    episodes_rewards.append([train_step,t1,mean_rewards,std_rewards ,mean_scores,std_scores])
+                    episodes_rewards.append([train_step,t1-t0,mean_rewards,std_rewards ,mean_scores,std_scores])
 
-                    torch.save(self.model.state_dict(), f'Experiments/model_{type(self.model).__name__}_{type(self.env).__name__}_{self.name}.pth')
+                    torch.save(self.model.state_dict(), f'Experiments/model_{type(self.model).__name__}_{type(self.env).__name__}_{self.name}_.pth')
                 
             
             
-        np.savetxt(f"Experiments/rewards_{self.name}_use_conv_{self.use_conv}.txt", np.array(episodes_rewards), fmt="%s")
+        np.savetxt(f"Experiments/rewards_{self.name}_use_conv_{self.use_conv}_.txt", np.array(episodes_rewards), fmt="%s")
 
         return episodes_rewards
 
@@ -200,7 +202,7 @@ class DQNAgent:
     
     def plot(self , reward = True , score = True):
         
-        exp = np.loadtxt(f"Experiments/rewards_{self.name}_use_conv_{self.use_conv}.txt")
+        exp = np.loadtxt(f"Experiments/rewards_{self.name}_use_conv_{self.use_conv}_.txt")
         if reward:
             plt.figure()
             plt.title('Mean reward over learning')
