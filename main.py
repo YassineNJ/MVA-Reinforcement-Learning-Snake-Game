@@ -15,23 +15,21 @@ if __name__ == "__main__":
 
 
 
-    agent_name = 'ACN'
-
-    Train_agent = False
-
+    agent_name = 'DQN'
+    Train_agent = True
     plot_results = False
 
-    display = True
+    display = False
 
     BATCH_SIZE = 256
     TRAIN_STEPS = 100000
     EVAL_EVERY = 1000
     WEIGHTED_SAMPLING = 1
-    Image_representation = True
-    double_train = True
-    double = True
+    Image_representation = False
+    double_train = False
+    double = False
     dueling = False
-    use_conv = True
+    use_conv = False
     # # define environement
 
     env = SnakeGame(w=80, h=80 , max_reward = 1,food_nb = 1 , early_stopping_factor = 10 ,gray_scale = False, isdisplayed = display, use_images = Image_representation   , image_reduction = 2 )
