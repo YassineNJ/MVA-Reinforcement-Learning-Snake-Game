@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 class DQNAgent:
 
     def __init__(self, env, use_conv=False,dueling=False, double = False,
-                 learning_rate=1e-4, gamma=0.99, buffer_size=100000,batch_size = 256):
+                 learning_rate=1e-4, gamma=0.99, buffer_size=100000,batch_size = 256,update_tgt_every=200):
         
         self.env = env
         self.use_conv = use_conv
@@ -23,10 +23,11 @@ class DQNAgent:
         self.double = double
         self.batch_size = batch_size
         self.learning_rate = learning_rate
-        self.name = "IMG_"*self.use_conv +'DQN'+ dueling * '_DUELING' + double * '_DOUBLE' + '_BS_'+ str(self.batch_size )+"_LR_"+str(self.learning_rate)
+        self.update_tgt_every = update_tgt_every
+        self.name = "IMG_"*self.use_conv +'DQN'+ dueling * '_DUELING' + double * '_DOUBLE' + '_BS_'+ str(self.batch_size )+ \
+            "_LR_"+str(self.learning_rate)+'_UTE_'+str(self.update_tgt_every)
         self.model = DQN(env.observation_space, len(self.env.actions),use_conv =self.use_conv, dueling=dueling)  
         self.tgt_model = deepcopy(self.model)
-        self.update_tgt_every = 200
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(self.device)
         
