@@ -73,19 +73,20 @@ class DQNAgent:
                 greedy_Q = torch.max(tgt_Q,dim=1)[0].unsqueeze(1)
                 greedy_A = torch.max(tgt_Q,dim=1)[1].unsqueeze(1)
             
-                unb_Q    =  real_Q.gather(1,greedy_A)  
-                expected_Q =  rewards.squeeze(1) + (1 - dones) * self.gamma * unb_Q
+                unb_Q    =  real_Q.gather(1,greedy_A).squeeze() 
+                expected_Q =  rewards.squeeze(1) + (1 - dones).squeeze() * self.gamma * unb_Q
     
             else :
                      
                 tgt_Q = self.tgt_model.forward(next_states)
                 max_next_Q = torch.max(tgt_Q, 1)[0]
 
-                expected_Q = rewards.squeeze(1) + (1 - dones) * self.gamma * max_next_Q
+                expected_Q = rewards.squeeze(1) + (1 - dones).squeeze() * self.gamma * max_next_Q
         
 
         curr_Q = self.model.forward(states).gather(1, actions.unsqueeze(1))
         curr_Q = curr_Q.squeeze(1)
+        #print(expected_Q.size())
         loss = self.MSE_loss(curr_Q, expected_Q)
         return loss
 
