@@ -15,16 +15,24 @@ import torch.nn as nn
 
 class ACAgent:
     
-    def __init__(self,env, use_conv=True ,double_train=False, gamma = 0.95 , lr = 1e-4):
+    def __init__(self,env, use_conv=True ,double_train=False, gamma = 0.95 , learning_rate= 1e-4,
+                 n_steps=20,bootstrap=True,clip_grad=False):
 
         self.model = ACN(env.observation_space, len(env.actions),use_conv= use_conv,double_train=double_train)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(self.device)
         self.memory = Memory()
         self.gamma = gamma
-        self.optimizer =  torch.optim.Adam(self.model.parameters() , lr = lr)
+        self.n_steps = n_steps
+        self.bootstrap = bootstrap
+        self.optimizer =  torch.optim.Adam(self.model.parameters() , lr = learning_rate)
         self.env = env
         self.use_conv = use_conv
+        self.learning_rate = learning_rate
+        self.clip_grad = clip_grad
+        
+        self.name = "IMG_"*self.use_conv +'ACN'+  double_train * '_DOUBLE' +'_BS'*self.bootstrap + \
+            '_NS_'+ str(self.n_steps)+ "_LR_"+str(self.learning_rate)+ '_GAMMA_' + str(self.gamma) + '_CLIP_'*self.clip_grad
      
         
     
@@ -70,12 +78,15 @@ class ACAgent:
         entropies = torch.cat(entropies).to(self.device)
         
         with torch.no_grad():
-            next_values = np.zeros(1)
+            
             if bootstrap:
                 if embedding_loss !=0:
                     next_values,_ , _ = self.model(next_state)
                 else:
                     next_values,_  = self.model(next_state)
+            else :
+                next_values = np.zeros(1)
+                
             returns = self.compute_returns(next_values.squeeze(), rewards, masks,bootstrap)
             returns = torch.FloatTensor(returns).to(self.device)
         
@@ -91,32 +102,9 @@ class ACAgent:
                
         return actor_loss, critic_loss,embedding_loss
     
-    def eval(self,double_train= True,n_sim=5,display = False):
     
-        """
-        Monte Carlo evaluation of DQN agent
-        """
-        #copy_env = self.env.copy()
-        self.env.set_display(display)
-        #copy_env = self.env
-        rewards = np.zeros(n_sim)
-        scores = np.zeros(n_sim)
-        for sim in range(n_sim):
-            state = self.env.reset()
-            done = False
-            while not done:
-
-                action = self.select_action(state , double_train)
-                next_state, reward, done, score = self.env.step((action.unsqueeze(1).item()))
-                rewards[sim] += reward
-                scores[sim] = score
-                state = next_state
-        return rewards ,  scores
-
-    def load_model(self,path):
-        self.model.load_state_dict(torch.load(path))
     
-    def train(self,n_updates=10000,n_sim =100 , eval_every = 1000,n_steps = 20 , bootstrap = True , double_train = False):
+    def train(self,n_updates=10000, eval_every = 1000,n_sim =100 , double_train = False):
         
         next_state = self.env.reset()
         episodes_rewards =[]
@@ -129,14 +117,14 @@ class ACAgent:
             target = None
             embedding_loss = 0
      
-            if bootstrap :
+            if self.bootstrap :
                 step=0
                 # if int(np.log(update))%10000==0:
                 #     self.n_steps=+1
                 done = False
 
 
-                while step <n_steps and not done:
+                while step <self.n_steps and not done:
                     step+=1
 
                     next_state_tensor = torch.FloatTensor(next_state).to(self.device)
@@ -209,7 +197,8 @@ class ACAgent:
             loss = actor_loss+critic_loss+embedding_loss
             self.optimizer.zero_grad()
             loss.backward()
-            #torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5) ## Clip gradients to 0.5
+            if self.clip_grad:
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 0.5) ## Clip gradients to 0.5
             self.optimizer.step()
             
             if done : 
@@ -225,7 +214,7 @@ class ACAgent:
 
                 end = time.time()
                 #total_num_steps = (update + 1) * args.num_envs * args.num_steps
-                total_num_steps = (update + 1) * n_steps
+                total_num_steps = (update + 1) * self.n_steps
                 rewards , scores = self.eval(double_train,n_sim=n_sim)
                 std_rewards = np.std(rewards)
                 mean_rewards = np.mean(rewards)
@@ -238,14 +227,36 @@ class ACAgent:
                 print("episode =", episode, ", reward = ", np.round(mean_rewards,2) , "scores = ", np.round(mean_scores,2))
                 print("********************************************************")
                 torch.save(self.model.state_dict(), f'Experiments/model_{type(self.model).__name__}_{type(self.env).__name__}_{self.use_conv}_{random.randint(1,10)}_descreet.pth')
-        np.savetxt(f"Experiments/ACN_rewards_Use_conv_{self.use_conv}.txt", np.array(episodes_rewards), fmt="%s")
+        np.savetxt(f"Experiments/rewards_{self.name}.txt", np.array(episodes_rewards), fmt="%s")
         return episodes_rewards
-            
-    def plot(self , path, reward = True , score = True):
+    
+    def eval(self,double_train= True,n_sim=5,display = False):
+    
+        """
+        Monte Carlo evaluation of DQN agent
+        """
+        #copy_env = self.env.copy()
+        self.env.set_display(display)
+        copy_env = self.env.copy()
+        rewards = np.zeros(n_sim)
+        scores = np.zeros(n_sim)
+        for sim in range(n_sim):
+            state = self.env.reset()
+            done = False
+            while not done:
+
+                action = self.select_action(state , double_train)
+                next_state, reward, done, score = self.env.step((action.unsqueeze(1).item()))
+                rewards[sim] += reward
+                scores[sim] = score
+                state = next_state
+        return rewards ,  scores
+
+    def load_model(self,path):
+        self.model.load_state_dict(torch.load(path))  
+    def plot(self, reward = True , score = True):
         
-        exp = np.loadtxt(path)
-#         exp2 = np.loadtxt("Experiments/ACN_rewards.txt")
-#         exp3 = np.loadtxt("Experiments/ACN_rewards_Use_conv_False_descreet.txt")
+        exp = np.loadtxt(f"Experiments/rewards_{self.name}.txt")
         if reward:
             plt.figure()
             plt.title('Mean reward over learning')
@@ -264,11 +275,3 @@ class ACAgent:
             plt.xlabel('training steps')
             plt.legend()
         plt.show()
-        
-
-    
-
-        
-        
-        
-    

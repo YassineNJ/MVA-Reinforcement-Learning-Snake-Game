@@ -184,6 +184,7 @@ class DQNAgent:
                     # if np.mean(rewards) >= REWARD_THRESHOLD:
                     #     break
                     episodes_rewards.append([train_step,t1-t0,mean_rewards,std_rewards ,mean_scores,std_scores])
+                    
 
                     torch.save(self.model.state_dict(), f'Experiments/model_{type(self.model).__name__}_{type(self.env).__name__}_{self.name}_.pth')
 
