@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 class DQNAgent:
 
     def __init__(self, env, use_conv=False,dueling=False, double = False,
-                 learning_rate=1e-4, gamma=0.99, buffer_size=100000,batch_size = 256,update_tgt_every=200):
+                 learning_rate=1e-4, gamma=0.99, buffer_size=100000,batch_size = 256,update_tgt_every=200,weighted_sampling=1):
         
         self.env = env
         self.use_conv = use_conv
@@ -24,8 +24,9 @@ class DQNAgent:
         self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.update_tgt_every = update_tgt_every
+        self.weighted_sampling = weighted_sampling
         self.name = "IMG_"*self.use_conv +'DQN'+ dueling * '_DUELING' + double * '_DOUBLE' + '_BS_'+ str(self.batch_size )+ \
-            "_LR_"+str(self.learning_rate)+'_UTE_'+str(self.update_tgt_every)
+            "_LR_"+str(self.learning_rate)+'_UTE_'+str(self.update_tgt_every)+"_WS_"*self.weighted_sampling
         self.model = DQN(env.observation_space, len(self.env.actions),use_conv =self.use_conv, dueling=dueling)  
         self.tgt_model = deepcopy(self.model)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -130,7 +131,7 @@ class DQNAgent:
         return rewards , scores
 
 
-    def train(self,TRAIN_STEPS,EVAL_EVERY,WEIGHTED_SAMPLING):
+    def train(self,TRAIN_STEPS,EVAL_EVERY):
 
         t0 = time.time()
         self.env.set_display(False)
@@ -150,12 +151,12 @@ class DQNAgent:
             transition = (state, action, reward, next_state, done)
             self.replay_buffer.push(*transition)
             
-            if len(self.replay_buffer) > WEIGHTED_SAMPLING*self.batch_size:
+            if len(self.replay_buffer) > self.weighted_sampling*self.batch_size:
                 train_step +=1
 
                 if train_step%1000 == 0:
                     print('training step : ',train_step)
-                self.update(WEIGHTED_SAMPLING)
+                self.update(self.weighted_sampling)
 
                 
             if done  :

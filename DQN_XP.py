@@ -22,8 +22,8 @@ def dqn_experiment(agent_n='DQN',img=False,train_steps=10000,eval_every=1000,dou
     if agent_n== 'DQN':
         
         agent = DQNAgent(env, use_conv=use_conv,dueling=duelling, double = double,batch_size = batch_size,\
-            update_tgt_every=200,learning_rate=learning_rate)
-        agent.train(train_steps,eval_every,weighted_sampling)
+            update_tgt_every=200,learning_rate=learning_rate,weighted_sampling=weighted_sampling)
+        agent.train(train_steps,eval_every)
         agent.plot()
     
 if __name__ == '__main__':
