@@ -18,3 +18,4 @@ for i,fil in enumerate(files):
             plt.plot(exp[:,0], exp[:,2])
             plt.fill_between(exp[:,0], exp[:,2]+exp[:,3] , exp[:,2]-exp[:,3] , alpha = 0.2)
             plt.xlabel('training steps')
+            

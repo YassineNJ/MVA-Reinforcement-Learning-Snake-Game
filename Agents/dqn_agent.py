@@ -4,6 +4,7 @@ import sys, os
 sys.path.append('../')
 import numpy as np
 from Buffers.basic import BasicBuffer
+from Buffers.ere_buffer import EREBuffer
 from DeepNetworks.DQN import DQN
 from ExplorationPolicies.epsilon_greedy import EpsilonGreedy
 import time
@@ -13,11 +14,17 @@ import matplotlib.pyplot as plt
 class DQNAgent:
 
     def __init__(self, env, use_conv=False,dueling=False, double = False,
-                 learning_rate=1e-4, gamma=0.99, buffer_size=100000,batch_size = 256,update_tgt_every=200,weighted_sampling=1):
+                 learning_rate=1e-4, gamma=0.99, buffer_size=100000,
+                 batch_size = 256,update_tgt_every=200,weighted_sampling=1,ERE = False):
         
         self.env = env
         self.use_conv = use_conv
-        self.replay_buffer = BasicBuffer(max_size=buffer_size)
+        
+        if ERE:
+            self.replay_buffer = EREBuffer(max_size=buffer_size,n_updates = 100000)
+        else :
+            self.replay_buffer = BasicBuffer(max_size=buffer_size)
+            
         self.policy = EpsilonGreedy(self)
         self.dueling = dueling
         self.double = double
@@ -25,8 +32,9 @@ class DQNAgent:
         self.learning_rate = learning_rate
         self.update_tgt_every = update_tgt_every
         self.weighted_sampling = weighted_sampling
+        self.ERE = ERE
         self.name = "IMG_"*self.use_conv +'DQN'+ dueling * '_DUELING' + double * '_DOUBLE' + '_BS_'+ str(self.batch_size )+ \
-            "_LR_"+str(self.learning_rate)+'_UTE_'+str(self.update_tgt_every)+"_WS_"*self.weighted_sampling
+            "_LR_"+str(self.learning_rate)+'_UTE_'+str(self.update_tgt_every)+"_WS_" + str(self.weighted_sampling) + '_ERE'*self.ERE
         self.model = DQN(env.observation_space, len(self.env.actions),use_conv =self.use_conv, dueling=dueling)  
         self.tgt_model = deepcopy(self.model)
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -143,6 +151,10 @@ class DQNAgent:
         episode_reward = 0
         total_time = 0  
         train_step = 1
+        
+        if self.ERE: self.replay_buffer.n_updates = TRAIN_STEPS
+        
+        
         while  train_step< TRAIN_STEPS:
             action = self.select_action(state)
             next_state, reward, done, _ = env.step(action)
@@ -195,14 +207,6 @@ class DQNAgent:
 
 
 
-    # def experiment(self,N_EPISODES,EVAL_EVERY,BATCH_SIZE ,WEIGHTED_SAMPLING):
-        
-    #     #save_path = "C:/Users/yassine/Desktop/ATARI-RL-main/Experiments/snake"+self.name
-    
-    #     rewards = self.train_agent(N_EPISODES,EVAL_EVERY,BATCH_SIZE,WEIGHTED_SAMPLING)
-    #     np.savetxt(f"Experiments/DQN_episode_rewards_double_{self.double}_dueling_{self.duelling}.txt", np.array(rewards), fmt="%s")
-
-    #     # with open(save_path,'wb') as handle: pickle.dump(all_rewards,handle)
     
     def plot(self , reward = True , score = True):
         
