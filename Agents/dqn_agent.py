@@ -194,8 +194,8 @@ class DQNAgent:
 
                     t1 = time.time()          
                     print("episode =", ep, ", greedy reward = ", np.round(np.mean(rewards),2),",mean score = ",mean_scores , "time = ", t1-t0)
-                    # if np.mean(rewards) >= REWARD_THRESHOLD:
-                    #     break
+                    
+                    if self.ERE: print("Taking last",self.replay_buffer.c_k,"from buffer")
                     episodes_rewards.append([train_step,t1-t0,mean_rewards,std_rewards ,mean_scores,std_scores])
                     
 

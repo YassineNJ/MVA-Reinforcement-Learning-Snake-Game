@@ -27,5 +27,12 @@ def dqn_experiment(agent_n='DQN',img=False,train_steps=10000,eval_every=1000,dou
         agent.plot()
     
 if __name__ == '__main__':
-    dqn_experiment()
+    #dqn_experiment(ERE=True)
+    ERE = [True,False]
+
+    for ere in ERE:
+
+        dqn_experiment(agent_n='DQN',img=False,train_steps=100000,eval_every=1000,double=False,duelling = True,
+                    weighted_sampling =1,batch_size= 10,use_conv=False,learning_rate=1e-4,update_tgt_every=200,ERE=ere)
+
     

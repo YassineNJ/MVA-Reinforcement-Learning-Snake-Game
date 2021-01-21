@@ -10,7 +10,9 @@ class EREBuffer:
         self.k = 0
         self.n_updates = n_updates
         self.c_k_min = 5000
+        self.c_k = None
         self.mu = 0.996
+        
 
     def push(self, state, action, reward, next_state, done):
         experience = (state, action, np.array([reward]), next_state, done)
@@ -19,9 +21,16 @@ class EREBuffer:
     
     def sample(self, batch_size , weight = 1):
         
-        k +=1
-        c_k =  max (self.max_size * ( (self.mu) ** (1000 * k / self.n_updates ))  )
-        samples = self.buffer[c_k:]
+        
+        self.k +=1
+        c_k =  max (self.max_size * ( (self.mu) ** (1000 * self.k / self.n_updates )),self.c_k_min  )
+        c_k = int(c_k)
+        self.c_k = c_k
+        
+        if c_k+100 < len(self.buffer):
+            samples = list(self.buffer)[-c_k:]
+        else : 
+            samples = self.buffer
         
         state_batch = []
         action_batch = []
