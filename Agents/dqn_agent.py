@@ -116,27 +116,32 @@ class DQNAgent:
             
             self.tgt_model.load_state_dict(self.model.state_dict())
    
-    def eval(self, n_sim=50):
+    def eval(self, display = True, n_sim=50):
         
         """
         Monte Carlo evaluation of DQN agent
         """
         rewards = np.zeros(n_sim)
         scores = np.zeros(n_sim)
-        copy_env = self.env.copy() # Important!
+        self.env.set_display(display)
         #copy_env = self.env
         # Loop over number of simulations
         for sim in range(n_sim):
-            state = copy_env.reset()
+            state = self.env.reset()
             done = False
             while not done:
                 action = self.select_action(state)
-                next_state, reward, done, score = copy_env.step(action)
+                next_state, reward, done, score = self.env.step(action)
                 # update sum of rewards
                 rewards[sim] += reward
                 scores[sim] = score
                 state = next_state
         return rewards , scores
+    
+
+    def load_model(self,path):
+        self.model.load_state_dict(torch.load(path))  
+        self.tgt_model.load_state_dict(torch.load(path))  
 
 
     def train(self,TRAIN_STEPS,EVAL_EVERY):

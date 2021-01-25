@@ -260,7 +260,6 @@ class ACAgent:
         """
         #copy_env = self.env.copy()
         self.env.set_display(display)
-        copy_env = self.env.copy()
         rewards = np.zeros(n_sim)
         scores = np.zeros(n_sim)
         for sim in range(n_sim):

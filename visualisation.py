@@ -19,17 +19,17 @@ if __name__ == "__main__":
 
 
 
-    agent_name = 'DQN'
-    Train_agent = True
+    agent_name = 'ACN'
+    Train_agent = False
     plot_results = False
 
-    display = False
-
+    display = True
+    Image_representation = True
     BATCH_SIZE = 256
-    TRAIN_STEPS = 1000
+    TRAIN_STEPS = 100000
     EVAL_EVERY = 100
     WEIGHTED_SAMPLING = 1
-    double_train = False #  using embedding loss
+    double_train = True #  using embedding loss
     double = False
     dueling = False
     use_conv = Image_representation
@@ -43,16 +43,19 @@ if __name__ == "__main__":
         agent = ACAgent(env , use_conv=use_conv ,double_train=double_train)
     if Train_agent:
         if agent_name == 'DQN':
-            agent.train(TRAIN_STEPS,EVAL_EVERY,WEIGHTED_SAMPLING)
+            agent.train(TRAIN_STEPS,EVAL_EVERY)
         if agent_name == 'ACN':
-            agent.train(n_updates=TRAIN_STEPS,n_sim =100 , eval_every =EVAL_EVERY ,n_steps = 20 , bootstrap = True , double_train = double_train)
+            agent.train(n_updates=TRAIN_STEPS,n_sim =100 , eval_every =EVAL_EVERY , double_train = double_train)
 
     if plot_results:
         agent.plot()
 
     if display:
-        agent.load_model(path2model)
-        agent.eval(double_train=True,display = True,n_sim=10)
+        agent.load_model('Experiments\model_ACN_SnakeGame_Best.pth')
+        if agent_name == 'ACN':
+            agent.eval(double_train=True,display = True,n_sim=10)
+        if agent_name == 'DQN':
+            agent.eval(display = True,n_sim=10)
 
 
 
@@ -61,3 +64,5 @@ if __name__ == "__main__":
 
 
 
+
+# %%
