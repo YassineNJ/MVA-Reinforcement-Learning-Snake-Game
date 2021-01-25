@@ -17,24 +17,23 @@ if __name__ == "__main__":
     pygame.init()
 
 
-    agent_name = 'DQN'
-    
-    path2model = #path#
-    Train_agent = Flase
 
+
+    agent_name = 'DQN'
+    Train_agent = True
     plot_results = False
 
-    display = True
+    display = False
 
     BATCH_SIZE = 256
     TRAIN_STEPS = 1000
     EVAL_EVERY = 100
     WEIGHTED_SAMPLING = 1
-    Image_representation = False
     double_train = False #  using embedding loss
     double = False
     dueling = False
     use_conv = Image_representation
+
     # # define environement
 
     env = SnakeGame(w=80, h=80 , max_reward = 1,food_nb = 1 , early_stopping_factor = 10 ,gray_scale = False, isdisplayed = display, use_images = Image_representation   , image_reduction = 2 )

@@ -101,8 +101,31 @@ class ACAgent:
                
                
         return actor_loss, critic_loss,embedding_loss
-    
-    
+      
+        def eval(self,double_train= True,n_sim=5,display = False):
+          """
+          Monte Carlo evaluation of DQN agent
+          """
+          #copy_env = self.env.copy()
+          self.env.set_display(display)
+          #copy_env = self.env
+          rewards = np.zeros(n_sim)
+          scores = np.zeros(n_sim)
+          for sim in range(n_sim):
+              state = self.env.reset()
+              done = False
+              while not done:
+
+                  action = self.select_action(state , double_train)
+                  next_state, reward, done, score = self.env.step((action.unsqueeze(1).item()))
+                  rewards[sim] += reward
+                  scores[sim] = score
+                  state = next_state
+          return rewards ,  scores
+
+    def load_model(self,path):
+        self.model.load_state_dict(torch.load(path))
+
     
     def train(self,n_updates=10000, eval_every = 1000,n_sim =100 , double_train = False):
         
