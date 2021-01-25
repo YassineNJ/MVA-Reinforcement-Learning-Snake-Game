@@ -18,7 +18,8 @@ if __name__ == "__main__":
 
 
     agent_name = 'DQN'
-
+    
+    path2model = #path#
     Train_agent = Flase
 
     plot_results = False
@@ -51,7 +52,7 @@ if __name__ == "__main__":
         agent.plot()
 
     if display:
-        agent.load_model('Experiments/model_ACN_SnakeGame_True.pth')
+        agent.load_model(path2model)
         agent.eval(double_train=True,display = True,n_sim=10)
 
 
