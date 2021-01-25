@@ -19,19 +19,19 @@ if __name__ == "__main__":
 
     agent_name = 'DQN'
 
-    Train_agent = True
+    Train_agent = Flase
 
-    plot_results = True
+    plot_results = False
 
-    display = False
+    display = True
 
     BATCH_SIZE = 256
     TRAIN_STEPS = 1000
     EVAL_EVERY = 100
     WEIGHTED_SAMPLING = 1
     Image_representation = False
-    double_train = True
-    double = True
+    double_train = False #  using embedding loss
+    double = False
     dueling = False
     use_conv = Image_representation
     # # define environement
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         agent.plot()
 
     if display:
-        agent.load_model('Experiments/model_ACN_SnakeGame_True_97_1000000iter.pth')
+        agent.load_model('Experiments/model_ACN_SnakeGame_True.pth')
         agent.eval(double_train=True,display = True,n_sim=10)
 
 
