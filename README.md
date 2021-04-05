@@ -1,4 +1,4 @@
-# Reinforcement-Learning-Atari
+# Reinforcement-Learning-Snake-Game
 
 Implementation of 2 reinforcement learning models playing Snake game:
 
