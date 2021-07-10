@@ -1,6 +1,6 @@
 # Reinforcement-Learning-Snake-Game
 
-Implementation of 2 reinforcement learning models playing Snake game:
+Implementation of 2 reinforcement learning approches for Snake game:
 
  - DQN 
  - Actor critic (A2C)
